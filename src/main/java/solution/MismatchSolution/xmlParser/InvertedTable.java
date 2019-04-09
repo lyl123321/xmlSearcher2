@@ -2,7 +2,10 @@ package solution.MismatchSolution.xmlParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
@@ -114,6 +117,66 @@ public class InvertedTable {
 		}
         
 		return refer.size();
+	}
+	
+	public List<Map> getResults() {
+		ArrayList<ArrayList<String>> nodesArr = new ArrayList<ArrayList<String>>();
+		ArrayList<Map> R = new ArrayList<Map>();
+		
+		for (int i = 0; i < myDBNumber; i++) {
+			Database database = myDB[i];
+			Cursor cursor = database.openCursor(null, null);
+			ArrayList<String> nodes = new ArrayList<String>();
+			try {
+				DatabaseEntry theKey = new DatabaseEntry();
+				DatabaseEntry theData = new DatabaseEntry();
+				while (cursor.getNext(theKey, theData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+					while (cursor.getNextDup(theKey, theData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+				        String deweyID = new String(theData.getData(), "UTF-8");
+				        nodes.add(deweyID);
+					}
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+			} finally {
+				nodesArr.add(nodes);
+				cursor.close();
+			}
+		}
+		
+		ArrayList<String> comAn = new ArrayList<String>();
+		for (int i = 0; i < myDBNumber; i++) {
+        	comAn.retainAll(nodesArr.get(i));
+		}
+        
+		int len = comAn.size();
+		if(len > 5) {
+			len = 5;
+			for (int i = 0; i < 5; i++) {
+				if(comAn.get(i).contentEquals("0")) comAn.remove(i);
+			}
+		}
+		
+		for (int i = 0; i < len; i++) {
+			Map result = new HashMap();
+			String vlca = comAn.get(i);
+			HashSet<String> mNodes = new HashSet<String>();
+			for (int j = 0; j < myDBNumber; j++) {
+				ArrayList<String> nodes = nodesArr.get(i);
+				for(String node : nodes) {
+					if(node.indexOf(vlca) == 0) {
+						mNodes.add(node);
+						break;
+					}
+				}
+			}
+	        result.put("vlca", vlca);
+	        result.put("nodes", mNodes);
+	        //result.put("nodes", mNodes.toArray(new String[0]));
+	        R.add(result);
+		}
+		
+		return R;
 	}
 	
 	public void closeInvertedTableDB() {
