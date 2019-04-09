@@ -39,7 +39,8 @@ public class XmlParser {
     	Arrays.fill(ft, 0);
     	
     	int[] exLabel = new int[len];
-    	process1Rec(element, s, n, typeList, ft, exLabel, exLabel);
+    	//process1Rec(element, s, n, typeList, ft, exLabel, exLabel);
+    	process1Rec(element, s, n, typeList, ft, exLabel, exLabel, exLabel);
     	
     	String root = "0";
     	String type = replaceTable.getIndex(root).getType();
@@ -51,25 +52,33 @@ public class XmlParser {
     	infoTable.setIndex("Ft", Arrays.toString(ft));
     }
     
-    private void process1Rec(Element element, String s, int n, Vector<String> typeList, int[] ft, int[] faExLabel, int[] grExLabel){
+    private void process1Rec(Element element, String s, int n, Vector<String> typeList, int[] ft, int[] faExLabel, int[] grExLabel, int[] ggrExLabel){
     	Iterator<Element> iterator = element.elementIterator();
         String deweyID = s + (new Integer(n)).toString();
         String type = element.getPath();
         String xml = element.asXML();
         int m = 0, len = typeList.size(), index1 = typeList.indexOf(type);
+        
+        if(index1 == -1) {
+        	System.out.println("type: " + type);
+        	return;
+        }
+        
         ft[index1]++;
         
         int[] exLabel = new int[len];
         for(int i = 0; i < len; i++) {
         	exLabel[i] = 0;
         }
-        exLabel[index1] = faExLabel[index1] = grExLabel[index1] = 1;
+        //exLabel[index1] = faExLabel[index1] = grExLabel[index1] = 1;
+        exLabel[index1] = faExLabel[index1] = grExLabel[index1] = ggrExLabel[index1] = 1;
         
         while (iterator.hasNext()) { 
         	Element child = iterator.next();
         	int index2 = typeList.indexOf(element.getPath());
-        	exLabel[index2] = faExLabel[index2] = grExLabel[index2] = 1;
-        	process1Rec(child, s + (new Integer(n)).toString() + ".", m, typeList, ft, exLabel, faExLabel);
+        	//exLabel[index2] = faExLabel[index2] = grExLabel[index2] = 1;
+        	exLabel[index2] = faExLabel[index2] = grExLabel[index2] = ggrExLabel[index2] = 1;
+        	process1Rec(child, s + (new Integer(n)).toString() + ".", m, typeList, ft, exLabel, faExLabel, grExLabel);
             m++;
         }
         replaceTable.setIndex(deweyID, type, xml, exLabel);

@@ -19,15 +19,15 @@ public class Docu
     }
     public void addElement(String parentName, Elem element)
     {
-        if(parentName == null)
-        {
+        if(parentName == null) {
             rootElement = element;            
-        }
-        else
-        {
+        } else {
             findElement(parentName).addElement(element);            
-        }      
-        allElements.add(element);
+        }
+        
+        if(parentName == null || !parentName.matches("^(sub|sup|i|tt|ref)$")) {
+        	allElements.add(element);
+        }
     }
     
     public void addObject(String parentName, Structure structure)

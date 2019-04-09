@@ -8,34 +8,34 @@ import java.util.Map;
 public class App { 
     public static void main(String args[]){
         //查询 Q
-        String[] Q = {"344", "Makley", "10:30AM", "BIOL"};
+        String[] Q = {"Paul", "1994", "0169", "System"};
         //查询结果 R
         List<Map> R = new ArrayList<Map>();
         
         Map r1 = new HashMap();
         r1.put("vlca", "0");
-        String[] M1 = {"0.1.2", "0.1.6", "0.1.8.0", "0.2.1"};
+        String[] M1 = {"0.2.0", "0.3.6", "0.4.0", "0.2.2"};
         r1.put("nodes", M1);
-        
+        /*
         Map r2 = new HashMap();
         r2.put("vlca", "0");
         String[] M2 = {"0.1.2", "0.1.6", "0.1.8.0", "0.2.1"};
         r2.put("nodes", M2);
-
+        */
         R.add(r1);
-        R.add(r2);
+        //R.add(r2);
         //阈值
         double τ = 0.9;
-        
         //url
-        /*
-        String xml = "data/dblp/dblp.xml"; 
+        
+        String xml = "data/dblp/dblp2.xml"; 
         String dtd = "data/dblp/dblp.dtd";
         String dtdxml = "data/dblp/dtd.xml";
-        */
+        /*
         String xml = "data/reed/reed.xml"; 
         String dtd = "data/reed/reed.dtd";
         String dtdxml = "data/reed/dtd.xml";
+        */
         PreParse parser = new PreParse(Q, xml, dtd, dtdxml);
         parser.parse();
         

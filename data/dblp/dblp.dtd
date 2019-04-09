@@ -29,8 +29,8 @@
 <!ELEMENT isbn      (#PCDATA)>
 <!ELEMENT chapter   (#PCDATA)>
 <!ELEMENT series    (#PCDATA)>
-<!ELEMENT ref (#PCDATA)>
-<!ELEMENT sup (#PCDATA)>
-<!ELEMENT sub (#PCDATA)>
-<!ELEMENT i   (#PCDATA)>
-<!ELEMENT tt  (#PCDATA)>
+<!ELEMENT ref (sub|sup|i|tt|ref)*>
+<!ELEMENT sup (sub|sup|i|tt|ref)*>
+<!ELEMENT sub (sub|sup|i|tt|ref)*>
+<!ELEMENT i   (sub|sup|i|tt|ref)*>
+<!ELEMENT tt  (sub|sup|i|tt|ref)*>

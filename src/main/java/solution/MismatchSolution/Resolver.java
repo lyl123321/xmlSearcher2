@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -27,6 +28,8 @@ public class Resolver {
 	private int[][] maxContain;
 	private int[] Ft;
 	private double τ;
+	private String[][] K;
+	private double[] D;
 	private String[] Q;
 	private List<Map> R;
 	
@@ -54,7 +57,7 @@ public class Resolver {
 		for (int i = 0; i < len; i++) {
 			this.Ft[i] = Integer.parseInt(temp[i]);
 		}
-		setMaxContain("reed");
+		setMaxContain("dblp");
 	}
 	
 	public ArrayList<HashMap> resolve() {
@@ -66,6 +69,9 @@ public class Resolver {
     		String vlcaType = replaceTable.getIndex(vlca).getType();
     		String[] nodes = (String[])r.get("nodes");
     		String targetType = getTNT(nodes);
+    		System.out.println(typeList);
+    		System.out.println(Arrays.toString(Ft));
+    		System.out.println("tnt: " + targetType);
     		if(vlcaType.contentEquals(targetType)) {
     			System.out.println("This query don't exist mismatch problem");
     			return null;
@@ -80,16 +86,24 @@ public class Resolver {
     		String targetType = getTNT(nodes);
     		int[] rExLable = constructExlabel(nodes);
     		ArrayList<String> vlcais = new ArrayList<String>();
+    		int len = nodes.length;
+    		K = new String[len][];
+    		D = new double[len];
+    		for (int i = 0; i < len; i++) {
+    			K[i] = getKeywords(nodes[i]);
+    			D[i] = getDist(nodes[i], K[i]);
+    		}
     		//Phase 1
-    		for(String node : nodes) {
-    			String[] keywords = getKeywords(node);
-    			if(getDist(node, keywords) < τ) continue;
-				String[] ids = node.split("\\.");
+    		for (int i = 0; i < len; i++) {
+    			System.out.println("---------------------------------------");
+    			System.out.println("dist: " + D[i]);
+    			if(D[i] < τ) continue;
+				String[] ids = nodes[i].split("\\.");
 				int nodeLen = ids.length;
-				for (int i = vlcaLen; i < nodeLen; i++) {
+				for (int j = vlcaLen; j < nodeLen; j++) {
 					String vlcai = ids[0];
-					for (int j = 1; j <= i; j++) {
-						vlcai += "." + ids[j];
+					for (int k = 1; k <= j; k++) {
+						vlcai += "." + ids[k];
 					}
 					String vlcaiType = replaceTable.getIndex(vlcai).getType();
 					if (vlcaiType.contentEquals(targetType)) {
@@ -98,6 +112,7 @@ public class Resolver {
 						if(contain(exLable, rExLable)) {
 							//避免对相同的 vlcai 进行重复的 QuerySuggester 运算 
 							if(vlcais.indexOf(vlcai) >= 0) break;
+							System.out.println("vlcai: " + vlcai);
 							vlcais.add(vlcai);
 							QuerySuggester(vlcai, vlcaLen, nodes, suggestedQueries);
 						}
@@ -106,9 +121,11 @@ public class Resolver {
     		}
     		//Phase 2
     		sort(nodes);
-    		for (int i = 0, len = nodes.length; i < len - 1; i++) {
+    		for (int i = 0; i < len - 1; i++) {
 				String lca = getLCA(nodes[i], nodes[i + 1]);
 				String[] keywords = getKeywords(lca);
+    			System.out.println("---------------------------------------");
+    			System.out.println("dist: " + getDist(lca, keywords));
 				if(getDist(lca, keywords) < τ) continue;
 				String[] ids = lca.split("\\.");
 				int nodeLen = ids.length;
@@ -122,6 +139,7 @@ public class Resolver {
 						int[] exLable = replaceTable.getIndex(vlcai).getExLabel();
 						if(contain(exLable, rExLable)) {
 							if(vlcais.indexOf(vlcai) >= 0) break;
+							System.out.println("vlcai: " + vlcai);
 							vlcais.add(vlcai);
 							QuerySuggester(vlcai, vlcaLen, nodes, suggestedQueries);
 						}
@@ -142,7 +160,8 @@ public class Resolver {
 		
 		for (int i = 0; i < len; i++) {
 			String node = nodes[i];
-			if(node.indexOf(vlcai) < 0) {
+			//node 不是 vlcai 的子节点
+			if(node.indexOf(vlcai) != 0) {
 				String type = replaceTable.getIndex(node).getType();
 				replace[i] = replaceTable.getReplacement(vlcai, type);
 				bool[i] = true;
@@ -161,34 +180,36 @@ public class Resolver {
 
 		for (int i = 0; i < len; i++) {
 			if(!bool[i]) continue;
-			String node = nodes[i];
-			String[] keywords = getKeywords(node);
-			count += keywords.length;
-			distSum += getDist(node, keywords);
+			count += K[i].length;
+			distSum += D[i];
 		}
 		
 		score = 1.0 / Math.pow(e, count) * (1.0 - 1.0 / Math.pow(e, dt)) * 1.0 / Math.pow(e, distSum);
+		System.out.println("score: " + score);
 		
 		//各种可能的替换节点列表
 		ArrayList<ArrayList<String>> expNodesArray = multiCartesian(replace);
+		System.out.println("expNodesArray: " + expNodesArray);
 		
 		for(ArrayList<String> expNodes : expNodesArray) {
 			String[] eNodes = expNodes.toArray(new String[0]);
-			ArrayList<String> query = new ArrayList<String>();
+			//Set 保证没有重复的查询关键字
+			HashSet<String> query = new HashSet<String>();
 			HashMap sugQuery = new HashMap();
 			HashMap expResult = new HashMap();
 
 			for(int i = 0; i < len; i++) {
 				String node = eNodes[i];
 				String subtree = replaceTable.getIndex(node).getXml();
-				//正则表达式还得好好考虑---------------------------------------------------------------------------
-				Pattern pattern = Pattern.compile("<.+>[\\r\\n\\s]*([^\\r\\n\\s]+)[\\r\\n\\s]*<.+>");
+				if(!bool[i]) {
+					query.addAll(Arrays.asList(K[i]));
+					continue;
+				}
+				Pattern pattern = Pattern.compile("<.+>[\\r\\n\\s]*([^\\r\\n]+)[\\r\\n\\s]*<.+>");
 				Matcher matcher = pattern.matcher(subtree);
 				matcher.find();
-				String[] keywords = matcher.group(1).split(" ");
-				for (String keyword : keywords) {
-					query.add(keyword);
-				}
+				query.add(matcher.group(1));
+				System.out.println(String.join(" ", K[i]) + " -> " + matcher.group(1));
 			}
 			
 			//添加查询 sugQuery 到 sugQueries 中
