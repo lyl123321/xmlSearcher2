@@ -6,7 +6,6 @@ import java.util.Vector;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
-import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import solution.MismatchSolution.dtd2xml.Docu;
@@ -15,13 +14,11 @@ import solution.MismatchSolution.xmlParser.XmlFlat;
 import solution.MismatchSolution.xmlParser.XmlParser;
 
 public class PreParse {
-	private String[] Q;
 	private String xml;
 	private String dtd;
 	private String dtdxml;
 	
-	public PreParse(String[] Q, String xml, String dtd, String dtdxml) {
-		this.Q = Q;
+	public PreParse(String xml, String dtd, String dtdxml) {
 		this.xml = xml;
 		this.dtd = dtd;
 		this.dtdxml = dtdxml;
@@ -58,13 +55,11 @@ public class PreParse {
             System.err.println("ERROR: due to an IOException,the parser could not encode "+ dtdxml); 
 		}
         
-        //解析reed.xml
+        //解析 xml 数据库，生成 replaceTable 和 infoTable
         try {
         	Document document = saxReader.read(new File(xml));
-        	Element rootElement = document.getRootElement();
-	        XmlParser xmlParser = new XmlParser(Q);
-	        xmlParser.process1(rootElement, "", 0, typeList);
-	        xmlParser.process2(rootElement, "", 0);
+	        XmlParser xmlParser = new XmlParser(new String[0]);
+	        xmlParser.process1(document.getRootElement(), "", 0, typeList);
 	        xmlParser.close();
 	    } catch (DocumentException e) { 
 	        System.err.println("ERROR: due to an IOException,the parser could not encode "+ xml); 

@@ -69,13 +69,12 @@ public class Resolver {
     		String vlcaType = replaceTable.getIndex(vlca).getType();
     		String[] nodes = (String[])r.get("nodes");
     		String targetType = getTNT(nodes);
-    		System.out.println(typeList);
-    		System.out.println(Arrays.toString(Ft));
     		System.out.println("tnt: " + targetType);
     		if(vlcaType.contentEquals(targetType)) {
-    			System.out.println("This query don't exist mismatch problem");
+    			System.out.println("This query doesn't exist mismatch problem");
     			return null;
     		}
+    		
         }
     	
     	//Suggester
@@ -111,7 +110,7 @@ public class Resolver {
 						//如果 vlcai 的 exLable 包含 rExLable 
 						if(contain(exLable, rExLable)) {
 							//避免对相同的 vlcai 进行重复的 QuerySuggester 运算 
-							if(vlcais.indexOf(vlcai) >= 0) break;
+							if(vlcais.contains(vlcai)) break;
 							System.out.println("vlcai: " + vlcai);
 							vlcais.add(vlcai);
 							QuerySuggester(vlcai, vlcaLen, nodes, suggestedQueries);
@@ -138,7 +137,7 @@ public class Resolver {
 					if (vlcaiType.contentEquals(targetType)) {
 						int[] exLable = replaceTable.getIndex(vlcai).getExLabel();
 						if(contain(exLable, rExLable)) {
-							if(vlcais.indexOf(vlcai) >= 0) break;
+							if(vlcais.contains(vlcai)) break;
 							System.out.println("vlcai: " + vlcai);
 							vlcais.add(vlcai);
 							QuerySuggester(vlcai, vlcaLen, nodes, suggestedQueries);
@@ -172,19 +171,19 @@ public class Resolver {
 		}
 
 		// 计算分数 score
-		double count = 0.0;
+		double cn = 0.0;
 		double dt = vlcai.split("\\.").length - vlcaLen;
-		double distSum = 0.0;
+		double SD = 0.0;
 		double e = 2.71828;
 		double score = 0.0;
 
 		for (int i = 0; i < len; i++) {
 			if(!bool[i]) continue;
-			count += K[i].length;
-			distSum += D[i];
+			cn += K[i].length;
+			SD += D[i];
 		}
 		
-		score = 1.0 / Math.pow(e, count) * (1.0 - 1.0 / Math.pow(e, dt)) * 1.0 / Math.pow(e, distSum);
+		score = 1.0 / Math.pow(e, cn) * (1.0 - 1.0 / Math.pow(e, dt)) * 1.0 / Math.pow(e, SD);
 		System.out.println("score: " + score);
 		
 		//各种可能的替换节点列表
@@ -200,6 +199,7 @@ public class Resolver {
 
 			for(int i = 0; i < len; i++) {
 				String node = eNodes[i];
+				String type = replaceTable.getIndex(node).getType();
 				String subtree = replaceTable.getIndex(node).getXml();
 				if(!bool[i]) {
 					query.addAll(Arrays.asList(K[i]));
@@ -209,7 +209,7 @@ public class Resolver {
 				Matcher matcher = pattern.matcher(subtree);
 				matcher.find();
 				query.add(matcher.group(1));
-				System.out.println(String.join(" ", K[i]) + " -> " + matcher.group(1));
+				System.out.println("(" + type + "): " + String.join(" ", K[i]) + " -> " + matcher.group(1));
 			}
 			
 			//添加查询 sugQuery 到 sugQueries 中

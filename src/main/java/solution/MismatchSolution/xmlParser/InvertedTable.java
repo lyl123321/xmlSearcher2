@@ -3,7 +3,6 @@ package solution.MismatchSolution.xmlParser;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -71,7 +70,7 @@ public class InvertedTable {
 	
 	public void setIndex(String type, String deweyID, String subtree) {
 		for(int i = 0; i < myDBNumber; i++) {
-			if(subtree.indexOf(keywords[i]) >= 0) {
+			if(subtree.contains(keywords[i])) {
 				try {
 					DatabaseEntry theKey = new DatabaseEntry(type.getBytes("UTF-8"));
 					DatabaseEntry theData = new DatabaseEntry(deweyID.getBytes("UTF-8"));
@@ -119,7 +118,8 @@ public class InvertedTable {
 		return refer.size();
 	}
 	
-	public List<Map> getResults() {
+	//获取查询结果
+	public List<Map> getResults(int K) {
 		ArrayList<ArrayList<String>> nodesArr = new ArrayList<ArrayList<String>>();
 		ArrayList<Map> R = new ArrayList<Map>();
 		
@@ -131,9 +131,9 @@ public class InvertedTable {
 				DatabaseEntry theKey = new DatabaseEntry();
 				DatabaseEntry theData = new DatabaseEntry();
 				while (cursor.getNext(theKey, theData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+			        nodes.add(new String(theData.getData(), "UTF-8"));
 					while (cursor.getNextDup(theKey, theData, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
-				        String deweyID = new String(theData.getData(), "UTF-8");
-				        nodes.add(deweyID);
+				        nodes.add(new String(theData.getData(), "UTF-8"));
 					}
 				}
 			} catch (Exception e) {
@@ -144,35 +144,44 @@ public class InvertedTable {
 			}
 		}
 		
-		ArrayList<String> comAn = new ArrayList<String>();
-		for (int i = 0; i < myDBNumber; i++) {
+		ArrayList<String> comAn = (ArrayList<String>) nodesArr.get(0).clone();
+		for (int i = 1; i < myDBNumber; i++) {
         	comAn.retainAll(nodesArr.get(i));
 		}
-        
+		
 		int len = comAn.size();
-		if(len > 5) {
-			len = 5;
-			for (int i = 0; i < 5; i++) {
+		if(len > K) {
+			len = K;
+			for (int i = 0; i < K; i++) {
 				if(comAn.get(i).contentEquals("0")) comAn.remove(i);
 			}
 		}
 		
 		for (int i = 0; i < len; i++) {
-			Map result = new HashMap();
 			String vlca = comAn.get(i);
-			HashSet<String> mNodes = new HashSet<String>();
-			for (int j = 0; j < myDBNumber; j++) {
-				ArrayList<String> nodes = nodesArr.get(i);
+			Map result = new HashMap();
+			ArrayList<String> mNodes = new ArrayList<String>();
+			for (ArrayList<String> nodes : nodesArr) {
+				ArrayList<String> temp = new ArrayList<String>();
 				for(String node : nodes) {
-					if(node.indexOf(vlca) == 0) {
-						mNodes.add(node);
-						break;
+					if(node.indexOf(vlca + ".") == 0) {
+						temp.add(node);
 					}
 				}
+				String res = temp.get(0);
+				int maxLen = res.split("\\.").length;
+				for (int k = 1, size = temp.size(); k < size; k++) {
+					String node = temp.get(k);
+					int theLen = node.split("\\.").length;
+					if(theLen > maxLen) {
+						res = node;
+						maxLen = theLen;
+					}
+				}
+				mNodes.add(res);
 			}
 	        result.put("vlca", vlca);
-	        result.put("nodes", mNodes);
-	        //result.put("nodes", mNodes.toArray(new String[0]));
+	        result.put("nodes", mNodes.toArray(new String[0]));
 	        R.add(result);
 		}
 		
