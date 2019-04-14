@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book SYSTEM "data/book/book.dtd">
+<book>
+<page>
+<ID></ID>
+<title></title>
+<a>
+<p>
+<t></t>
+</p>
+</a>
+<s>
+<h>
+<t></t>
+</h>
+<p>
+<t></t>
+</p>
+</s>
+</page>
+</book>

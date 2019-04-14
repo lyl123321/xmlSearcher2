@@ -1,0 +1,10 @@
+<!ELEMENT book (page*)>
+<!ELEMENT page (ID,title,a,s)>
+<!ELEMENT ID (#PCDATA)>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT a (p)>
+<!ELEMENT s (h,p)>
+
+<!ELEMENT h (t)>
+<!ELEMENT p (t)>
+<!ELEMENT t (#PCDATA)>

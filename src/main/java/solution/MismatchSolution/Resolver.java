@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,13 +58,14 @@ public class Resolver {
 		for (int i = 0; i < len; i++) {
 			this.Ft[i] = Integer.parseInt(temp[i]);
 		}
-		setMaxContain("dblp");
+		setMaxContain("book");
 	}
 	
 	public ArrayList<HashMap> resolve() {
 		ArrayList<HashMap> suggestedQueries = new ArrayList<HashMap>();
     	
     	//Detector
+		Date date1 = new Date();
     	for(Map r : R) {
     		String vlca = (String)r.get("vlca");
     		String vlcaType = replaceTable.getIndex(vlca).getType();
@@ -76,6 +78,8 @@ public class Resolver {
     		}
     		
         }
+    	Date date2 = new Date();
+    	System.out.println("Detector time: " + (date2.getTime() - date1.getTime()) + "ms");
     	
     	//Suggester
     	for(Map r : R) {
@@ -94,8 +98,6 @@ public class Resolver {
     		}
     		//Phase 1
     		for (int i = 0; i < len; i++) {
-    			System.out.println("---------------------------------------");
-    			System.out.println("dist: " + D[i]);
     			if(D[i] < τ) continue;
 				String[] ids = nodes[i].split("\\.");
 				int nodeLen = ids.length;
@@ -111,7 +113,6 @@ public class Resolver {
 						if(contain(exLable, rExLable)) {
 							//避免对相同的 vlcai 进行重复的 QuerySuggester 运算 
 							if(vlcais.contains(vlcai)) break;
-							System.out.println("vlcai: " + vlcai);
 							vlcais.add(vlcai);
 							QuerySuggester(vlcai, vlcaLen, nodes, suggestedQueries);
 						}
@@ -123,8 +124,6 @@ public class Resolver {
     		for (int i = 0; i < len - 1; i++) {
 				String lca = getLCA(nodes[i], nodes[i + 1]);
 				String[] keywords = getKeywords(lca);
-    			System.out.println("---------------------------------------");
-    			System.out.println("dist: " + getDist(lca, keywords));
 				if(getDist(lca, keywords) < τ) continue;
 				String[] ids = lca.split("\\.");
 				int nodeLen = ids.length;
@@ -138,7 +137,6 @@ public class Resolver {
 						int[] exLable = replaceTable.getIndex(vlcai).getExLabel();
 						if(contain(exLable, rExLable)) {
 							if(vlcais.contains(vlcai)) break;
-							System.out.println("vlcai: " + vlcai);
 							vlcais.add(vlcai);
 							QuerySuggester(vlcai, vlcaLen, nodes, suggestedQueries);
 						}
@@ -148,6 +146,8 @@ public class Resolver {
         }
     	
     	sort(suggestedQueries);
+    	System.out.println("Suggester time: " + ((new Date()).getTime() - date2.getTime()) + "ms");
+    	
     	return suggestedQueries;
     }
 	
@@ -184,11 +184,9 @@ public class Resolver {
 		}
 		
 		score = 1.0 / Math.pow(e, cn) * (1.0 - 1.0 / Math.pow(e, dt)) * 1.0 / Math.pow(e, SD);
-		System.out.println("score: " + score);
 		
 		//各种可能的替换节点列表
 		ArrayList<ArrayList<String>> expNodesArray = multiCartesian(replace);
-		System.out.println("expNodesArray: " + expNodesArray);
 		
 		for(ArrayList<String> expNodes : expNodesArray) {
 			String[] eNodes = expNodes.toArray(new String[0]);
@@ -209,7 +207,7 @@ public class Resolver {
 				Matcher matcher = pattern.matcher(subtree);
 				matcher.find();
 				query.add(matcher.group(1));
-				System.out.println("(" + type + "): " + String.join(" ", K[i]) + " -> " + matcher.group(1));
+				//System.out.println("(" + type + "): " + String.join(" ", K[i]) + " -> " + matcher.group(1));
 			}
 			
 			//添加查询 sugQuery 到 sugQueries 中
@@ -447,16 +445,13 @@ public class Resolver {
 		int len = typeList.size();
 		maxContain = new int[len][];
 		switch (model) {
-		case "reed":
-			maxContain[0] = new int[len];
-			Arrays.fill(maxContain[0], 100);
-			maxContain[0][0] = 1;
-			for (int i = 1; i < len; i++) {
+		case "dblp":
+			for (int i = 0; i < len; i++) {
 				maxContain[i] = new int[len];
-				Arrays.fill(maxContain[i], 1);;
+				Arrays.fill(maxContain[i], 100);;
 			}
 			break;
-		case "dblp":
+		case "book":
 			for (int i = 0; i < len; i++) {
 				maxContain[i] = new int[len];
 				Arrays.fill(maxContain[i], 100);;

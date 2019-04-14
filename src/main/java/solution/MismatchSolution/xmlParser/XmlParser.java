@@ -39,7 +39,6 @@ public class XmlParser {
     	Arrays.fill(ft, 0);
     	
     	int[] exLabel = new int[len];
-    	//process1Rec(element, s, n, typeList, ft, exLabel, exLabel);
     	process1Rec(element, s, n, typeList, ft, exLabel, exLabel, exLabel);
     	
     	String root = "0";
@@ -70,13 +69,11 @@ public class XmlParser {
         for(int i = 0; i < len; i++) {
         	exLabel[i] = 0;
         }
-        //exLabel[index1] = faExLabel[index1] = grExLabel[index1] = 1;
         exLabel[index1] = faExLabel[index1] = grExLabel[index1] = ggrExLabel[index1] = 1;
         
         while (iterator.hasNext()) { 
         	Element child = iterator.next();
         	int index2 = typeList.indexOf(element.getPath());
-        	//exLabel[index2] = faExLabel[index2] = grExLabel[index2] = 1;
         	exLabel[index2] = faExLabel[index2] = grExLabel[index2] = ggrExLabel[index2] = 1;
         	process1Rec(child, s + (new Integer(n)).toString() + ".", m, typeList, ft, exLabel, faExLabel, grExLabel);
             m++;
