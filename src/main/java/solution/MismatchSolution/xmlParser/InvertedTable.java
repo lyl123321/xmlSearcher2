@@ -144,21 +144,30 @@ public class InvertedTable {
 			}
 		}
 		
-		ArrayList<String> comAn = (ArrayList<String>) nodesArr.get(0).clone();
+		//获取 lca
+		ArrayList<String> lcas = (ArrayList<String>) nodesArr.get(0).clone();
 		for (int i = 1; i < myDBNumber; i++) {
-        	comAn.retainAll(nodesArr.get(i));
+			lcas.retainAll(nodesArr.get(i));
 		}
-		
-		int len = comAn.size();
-		if(len > K) {
-			len = K;
-			for (int i = 0; i < K; i++) {
-				if(comAn.get(i).contentEquals("0")) comAn.remove(i);
+				
+		//获取 slca
+		for (int i = 0; i < lcas.size();) {
+			String nodeString = lcas.get(i) + ".";
+			boolean b = true;
+			for (int j = 0; j < lcas.size(); j++) {
+				if(lcas.get(j).indexOf(nodeString) == 0) {
+					lcas.remove(i);
+					b = false;
+					break;
+				}
 			}
+			if(b) i++;
 		}
+		int len = lcas.size();
+		len = len < K ? len : K;
 		
 		for (int i = 0; i < len; i++) {
-			String vlca = comAn.get(i);
+			String vlca = lcas.get(i);
 			Map result = new HashMap();
 			ArrayList<String> mNodes = new ArrayList<String>();
 			for (ArrayList<String> nodes : nodesArr) {

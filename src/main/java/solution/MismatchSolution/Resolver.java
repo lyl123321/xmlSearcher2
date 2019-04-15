@@ -98,6 +98,7 @@ public class Resolver {
     		}
     		//Phase 1
     		for (int i = 0; i < len; i++) {
+    			//System.out.println(D[i]);
     			if(D[i] < τ) continue;
 				String[] ids = nodes[i].split("\\.");
 				int nodeLen = ids.length;
@@ -124,7 +125,9 @@ public class Resolver {
     		for (int i = 0; i < len - 1; i++) {
 				String lca = getLCA(nodes[i], nodes[i + 1]);
 				String[] keywords = getKeywords(lca);
-				if(getDist(lca, keywords) < τ) continue;
+				double dist = getDist(lca, keywords);
+				//System.out.println(dist);
+				if(dist < τ) continue;
 				String[] ids = lca.split("\\.");
 				int nodeLen = ids.length;
 				for (int j = vlcaLen; j < nodeLen; j++) {
