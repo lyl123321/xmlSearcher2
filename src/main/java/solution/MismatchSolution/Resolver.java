@@ -73,13 +73,14 @@ public class Resolver {
     		String targetType = getTNT(nodes);
     		System.out.println("tnt: " + targetType);
     		if(vlcaType.contentEquals(targetType)) {
+    			System.out.println("Detector time: " + ((new Date()).getTime() - date1.getTime()) + " ms");
     			System.out.println("This query doesn't exist mismatch problem");
     			return null;
     		}
     		
         }
     	Date date2 = new Date();
-    	System.out.println("Detector time: " + (date2.getTime() - date1.getTime()) + "ms");
+    	System.out.println("Detector time: " + (date2.getTime() - date1.getTime()) + " ms");
     	
     	//Suggester
     	for(Map r : R) {
@@ -149,7 +150,7 @@ public class Resolver {
         }
     	
     	sort(suggestedQueries);
-    	System.out.println("Suggester time: " + ((new Date()).getTime() - date2.getTime()) + "ms");
+    	System.out.println("Suggester time: " + ((new Date()).getTime() - date2.getTime()) + " ms");
     	
     	return suggestedQueries;
     }
@@ -200,7 +201,6 @@ public class Resolver {
 
 			for(int i = 0; i < len; i++) {
 				String node = eNodes[i];
-				String type = replaceTable.getIndex(node).getType();
 				String subtree = replaceTable.getIndex(node).getXml();
 				if(!bool[i]) {
 					query.addAll(Arrays.asList(K[i]));
@@ -210,7 +210,6 @@ public class Resolver {
 				Matcher matcher = pattern.matcher(subtree);
 				matcher.find();
 				query.add(matcher.group(1));
-				//System.out.println("(" + type + "): " + String.join(" ", K[i]) + " -> " + matcher.group(1));
 			}
 			
 			//添加查询 sugQuery 到 sugQueries 中
@@ -329,7 +328,7 @@ public class Resolver {
 		String subtree = replaceTable.getIndex(node).getXml();
 		ArrayList<String> keywords = new ArrayList<String>();
 		for(String keyword : Q) {
-			if(subtree.indexOf(keyword) >= 0) {
+			if(subtree.contains(keyword)) {
 				keywords.add(keyword);
 			}
 		}
@@ -451,13 +450,15 @@ public class Resolver {
 		case "dblp":
 			for (int i = 0; i < len; i++) {
 				maxContain[i] = new int[len];
-				Arrays.fill(maxContain[i], 100);;
+				Arrays.fill(maxContain[i], 100);
+				maxContain[i][i] = 1;
 			}
 			break;
 		case "book":
 			for (int i = 0; i < len; i++) {
 				maxContain[i] = new int[len];
-				Arrays.fill(maxContain[i], 100);;
+				Arrays.fill(maxContain[i], 100);
+				maxContain[i][i] = 1;
 			}
 			break;
 		default:

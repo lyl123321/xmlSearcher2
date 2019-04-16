@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 public class App {
     public static void main(String args[]){
+        //url
+        String xml = "data/book/book2.xml"; 
+        //获取前 K 个结果
+        int K = 10;
         //阈值 τ
         double τ = 0.9;
-        //url
-        String xml = "data/book/book.xml"; 
         
         /*
         //1、解析
@@ -24,12 +24,22 @@ public class App {
         parser.parse();
         */
         
+        /* 1\ String[] query = {"The victory of", "In a pair of", "12"};
+         * 2\ String[] query = {"is located in", "from other countries", "Abraham Lincoln"};
+         * 3\ String[] query = {"Unusual accordions", "In common usage", "The field of", "first album"};
+         * 4\ String[] query = {"According to", "no childhood", "453"};
+         * 5\ String[] query = {"multiple occurrences", "no childhood", "March"};
+         * 6\ String[] query = {"possible meaning", "the children of", "periods"};
+         * 7\ String[] query = {"introduction", "major advances", "public school"};
+         * 8\ String[] query = {"connections to", "most-adopted"};
+         * 9\ String[] query = {"A.", "the Second World War", "logic of"};
+         * 10\ String[] query = {"you", "look like", "a dog"};
+         */
+        
         //2、关键字查询
         Date date1 = new Date();
         System.out.println("1. Search: ");
-        String[] query = {"sections", "active", "victory"};
-        //获取前 K 个结果
-        int K = 5;
+        String[] query = {"you", "look like", "a dog"};
         List<Map> results = Searcher.search(query, xml, K);
         System.out.println("query: ");
         System.out.println(Arrays.toString(query));
@@ -38,7 +48,7 @@ public class App {
         	System.out.println("vlca: " + result.get("vlca") + ", nodes: " + Arrays.toString((String[])result.get("nodes")));
 		}
         Date date2 = new Date();
-        System.out.println("search time: " + (date2.getTime() - date1.getTime()) + "ms");
+        System.out.println("search time: " + (date2.getTime() - date1.getTime()) + " ms");
         
         //3、解决查询的失配问题
         System.out.println("--------------------------------------------------");
@@ -47,14 +57,7 @@ public class App {
         ArrayList<HashMap> suggestedQueries = resolver.resolve();
         resolver.close();
         if(suggestedQueries != null) {
-            int num = suggestedQueries.size();
-            System.out.println("suggested queries number: " + num);
-            System.out.println("top-5 suggested queries: ");
-            num = num < 5 ? num : 5;
-            for (int i = 0; i < num; i++) {
-            	System.out.println(suggestedQueries.get(i));
-    		}
+            System.out.println("suggested queries number: " + suggestedQueries.size());
         }
-        System.out.println("resolve time: " + ((new Date()).getTime() - date2.getTime()) + "ms");
     }
 } 
