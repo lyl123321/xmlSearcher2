@@ -10,7 +10,7 @@ import java.util.Map;
 public class App {
     public static void main(String args[]){
         //url
-        String xml = "data/book/book2.xml"; 
+        String xml = "data/book/book.xml"; 
         //获取前 K 个结果
         int K = 10;
         //阈值 τ

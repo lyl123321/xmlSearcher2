@@ -73,13 +73,14 @@ public class Resolver {
     		String targetType = getTNT(nodes);
     		System.out.println("tnt: " + targetType);
     		if(vlcaType.contentEquals(targetType)) {
+    			System.out.println("There is a mismatch problem with this query.");
     			System.out.println("Detector time: " + ((new Date()).getTime() - date1.getTime()) + " ms");
-    			System.out.println("This query doesn't exist mismatch problem");
     			return null;
     		}
     		
         }
     	Date date2 = new Date();
+    	System.out.println("There is no mismatch problem with this query.");
     	System.out.println("Detector time: " + (date2.getTime() - date1.getTime()) + " ms");
     	
     	//Suggester
@@ -87,6 +88,8 @@ public class Resolver {
     		String vlca = (String)r.get("vlca");
     		int vlcaLen = vlca.split("\\.").length;
     		String[] nodes = (String[])r.get("nodes");
+    		HashSet<String> nodeSet = new HashSet<String>(Arrays.asList(nodes));
+    		nodes = nodeSet.toArray(new String[0]);
     		String targetType = getTNT(nodes);
     		int[] rExLable = constructExlabel(nodes);
     		ArrayList<String> vlcais = new ArrayList<String>();
