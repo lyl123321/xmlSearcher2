@@ -16,13 +16,13 @@ public class App {
         //阈值 τ
         double τ = 0.9;
         
-        /*
+        
         //1、解析
         String dtd = "data/book/book.dtd";
         String dtdxml = "data/book/dtd.xml";
         PreParse parser = new PreParse(xml, dtd, dtdxml);
         parser.parse();
-        */
+        
         
         /* 1\ String[] query = {"The victory of", "In a pair of", "12"};
          * 2\ String[] query = {"is located in", "from other countries", "Abraham Lincoln"};
@@ -39,7 +39,7 @@ public class App {
         //2、关键字查询
         Date date1 = new Date();
         System.out.println("1. Search: ");
-        String[] query = {"you", "look like", "a dog"};
+        String[] query = {"possible meaning", "the children of", "periods"};
         List<Map> results = Searcher.search(query, xml, K);
         System.out.println("query: ");
         System.out.println(Arrays.toString(query));

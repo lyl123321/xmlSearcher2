@@ -16,6 +16,9 @@ public class XmlParser {
 	private ReplaceTable replaceTable;
 	private InfoTable infoTable;
 	private InvertedTable invertedTable;
+	private int BITPERWORD = 32;
+	private int SHIFT = 5;
+	private int MASK = 0x1f;
 	
 	public XmlParser(String[] Q) {
 		try {
@@ -38,20 +41,20 @@ public class XmlParser {
     	int[] ft = new int[len];
     	Arrays.fill(ft, 0);
     	
-    	int[] exLabel = new int[len];
-    	process1Rec(element, s, n, typeList, ft, exLabel, exLabel, exLabel);
+    	int[] bitVec = new int[(len-1)/BITPERWORD + 1];
+    	process1Rec(element, s, n, typeList, ft, bitVec, bitVec, bitVec);
     	
     	String root = "0";
     	String type = replaceTable.getIndex(root).getType();
         String xml = replaceTable.getIndex(root).getXml();
-        Arrays.fill(exLabel, 1);
-    	replaceTable.setIndex(root, type, xml, exLabel);
+        Arrays.fill(bitVec, -1);
+    	replaceTable.setIndex(root, type, xml, bitVec);
     	
     	infoTable.setIndex("typeList", typeList.toString());
     	infoTable.setIndex("Ft", Arrays.toString(ft));
     }
     
-    private void process1Rec(Element element, String s, int n, Vector<String> typeList, int[] ft, int[] faExLabel, int[] grExLabel, int[] ggrExLabel){
+    private void process1Rec(Element element, String s, int n, Vector<String> typeList, int[] ft, int[] faBitVec, int[] grBitVec, int[] ggrBitVec){
     	Iterator<Element> iterator = element.elementIterator();
         String deweyID = s + (new Integer(n)).toString();
         String type = element.getPath();
@@ -65,20 +68,27 @@ public class XmlParser {
         
         ft[index1]++;
         
-        int[] exLabel = new int[len];
-        for(int i = 0; i < len; i++) {
-        	exLabel[i] = 0;
+        int intLen = (len-1)/BITPERWORD + 1;
+        int[] bitVec = new int[intLen];
+        for(int i = 0; i < intLen; i++) {
+        	bitVec[i] = 0;
         }
-        exLabel[index1] = faExLabel[index1] = grExLabel[index1] = ggrExLabel[index1] = 1;
+        set(bitVec, index1);
+        set(faBitVec, index1);
+        set(grBitVec, index1);
+        set(ggrBitVec, index1);
         
         while (iterator.hasNext()) { 
         	Element child = iterator.next();
         	int index2 = typeList.indexOf(element.getPath());
-        	exLabel[index2] = faExLabel[index2] = grExLabel[index2] = ggrExLabel[index2] = 1;
-        	process1Rec(child, s + (new Integer(n)).toString() + ".", m, typeList, ft, exLabel, faExLabel, grExLabel);
+        	set(bitVec, index2);
+            set(faBitVec, index2);
+            set(grBitVec, index2);
+            set(ggrBitVec, index2);
+        	process1Rec(child, s + (new Integer(n)).toString() + ".", m, typeList, ft, bitVec, faBitVec, grBitVec);
             m++;
         }
-        replaceTable.setIndex(deweyID, type, xml, exLabel);
+        replaceTable.setIndex(deweyID, type, xml, bitVec);
     }
     
     public void process2(Element element, String s, int n){
@@ -94,6 +104,17 @@ public class XmlParser {
         }
         invertedTable.setIndex(type, deweyID, subtree);
     }
+    
+    //位向量操作，将第i位设为1
+    private void set(int[] bitVec, int i) {
+    	bitVec[i >> SHIFT] |= (1 << (i & MASK));
+    }
+    
+    /*位向量操作，将第i位设为0
+    private void clr(int[] bitVec, int i) {
+    	bitVec[i >> SHIFT] &= ~(1 << (i & MASK));
+    }
+    */
     
     public void close() {
     	replaceTable.closeReplaceTableDB();

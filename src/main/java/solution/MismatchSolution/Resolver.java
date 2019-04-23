@@ -33,6 +33,10 @@ public class Resolver {
 	private double[] D;
 	private String[] Q;
 	private List<Map> R;
+
+	private int BITPERWORD = 32;
+	private int SHIFT = 5;
+	private int MASK = 0x1f;
 	
 	public Resolver(String[] Q, List<Map> R, double τ) {
 		try {
@@ -73,14 +77,14 @@ public class Resolver {
     		String targetType = getTNT(nodes);
     		System.out.println("tnt: " + targetType);
     		if(vlcaType.contentEquals(targetType)) {
-    			System.out.println("There is a mismatch problem with this query.");
+    			System.out.println("There is no mismatch problem with this query.");
     			System.out.println("Detector time: " + ((new Date()).getTime() - date1.getTime()) + " ms");
     			return null;
     		}
     		
         }
     	Date date2 = new Date();
-    	System.out.println("There is no mismatch problem with this query.");
+    	System.out.println("There is a mismatch problem with this query.");
     	System.out.println("Detector time: " + (date2.getTime() - date1.getTime()) + " ms");
     	
     	//Suggester
@@ -91,7 +95,7 @@ public class Resolver {
     		HashSet<String> nodeSet = new HashSet<String>(Arrays.asList(nodes));
     		nodes = nodeSet.toArray(new String[0]);
     		String targetType = getTNT(nodes);
-    		int[] rExLable = constructExlabel(nodes);
+    		int[] rBitVec = constructBitVec(nodes);
     		ArrayList<String> vlcais = new ArrayList<String>();
     		int len = nodes.length;
     		K = new String[len][];
@@ -113,9 +117,9 @@ public class Resolver {
 					}
 					String vlcaiType = replaceTable.getIndex(vlcai).getType();
 					if (vlcaiType.contentEquals(targetType)) {
-						int[] exLable = replaceTable.getIndex(vlcai).getExLabel();
-						//如果 vlcai 的 exLable 包含 rExLable 
-						if(contain(exLable, rExLable)) {
+						int[] bitVec = replaceTable.getIndex(vlcai).getBitVec();
+						//如果 vlcai 的 bitVec 包含 rBitVec 
+						if(contain(bitVec, rBitVec)) {
 							//避免对相同的 vlcai 进行重复的 QuerySuggester 运算 
 							if(vlcais.contains(vlcai)) break;
 							vlcais.add(vlcai);
@@ -141,8 +145,8 @@ public class Resolver {
 					}
 					String vlcaiType = replaceTable.getIndex(vlcai).getType();
 					if (vlcaiType.contentEquals(targetType)) {
-						int[] exLable = replaceTable.getIndex(vlcai).getExLabel();
-						if(contain(exLable, rExLable)) {
+						int[] bitVec = replaceTable.getIndex(vlcai).getBitVec();
+						if(contain(bitVec, rBitVec)) {
 							if(vlcais.contains(vlcai)) break;
 							vlcais.add(vlcai);
 							QuerySuggester(vlcai, vlcaLen, nodes, suggestedQueries);
@@ -316,12 +320,13 @@ public class Resolver {
 		return commonPrefs;
 	}
 
-	//为 mnodes 构造 exlable
-	private int[] constructExlabel(String[] nodes) {
-		int[] res = new int[typeList.size()];
+	//为 mnodes 构造 bitVec
+	private int[] constructBitVec(String[] nodes) {
+		int[] res = new int[(typeList.size() - 1)/BITPERWORD + 1];
 		for(String node : nodes) {
 			String type = replaceTable.getIndex(node).getType();
-			res[typeList.indexOf(type)] = 1;
+			int index = typeList.indexOf(type);
+			set(res, index);
 		}
 		return res;
 	}
@@ -347,14 +352,15 @@ public class Resolver {
     	return dist;
 	}
 
-	//Algorithm 3, exLable1 是否包含 exLable2
-	private boolean contain(int[] exLable1, int[] exLable2) {
-		int len = exLable1.length;
-		int[] temp = new int[len];
+	//Algorithm 3, bitVec1  是否包含 bitVec2
+	private boolean contain(int[] bitVec1, int[] bitVec2) {
+		int len = bitVec1.length;
 		for (int i = 0; i < len; i++) {
-			temp[i] = exLable1[i] == 1 && exLable2[i] == 1 ? 1 : 0;
+			if (bitVec2[i] != (bitVec1[i] & bitVec2[i])) {
+				return false;
+			}
 		}
-		return Arrays.equals(exLable2, temp);
+		return true;
 	}
 	
 	//升序排列节点
@@ -444,6 +450,9 @@ public class Resolver {
        	return res;
 	}
 	
+	private void set(int[] bitVec, int i) {
+    	bitVec[i >> SHIFT] |= (1 << (i & MASK));
+    }
 	
 	//手动设置 MaxContain
 	private void setMaxContain(String model) {

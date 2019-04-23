@@ -7,12 +7,12 @@ public class ReplaceTableNode implements Serializable {
 	
 	private String type;
     private String xml;
-    private int[] exLabel;
+    private int[] bitVec;
     
-    public ReplaceTableNode(String type, String xml, int[] exLabel){
+    public ReplaceTableNode(String type, String xml, int[] bitVec){
     	this.type = type;
     	this.xml = xml;
-    	this.exLabel = exLabel;
+    	this.bitVec = bitVec;
     }
     
     public void setType(String type) {
@@ -23,8 +23,8 @@ public class ReplaceTableNode implements Serializable {
     	this.xml = xml;
     }
     
-    public void setExLabel(int[] exLabel) {
-    	this.exLabel = exLabel;
+    public void setBitVec(int[] bitVec) {
+    	this.bitVec = bitVec;
     }
     
     public String getType() {
@@ -35,7 +35,7 @@ public class ReplaceTableNode implements Serializable {
         return xml;
     }
     
-    public int[] getExLabel() {
-        return exLabel;
+    public int[] getBitVec() {
+        return bitVec;
     }
 }

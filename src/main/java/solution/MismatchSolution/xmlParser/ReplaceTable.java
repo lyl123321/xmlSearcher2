@@ -56,9 +56,9 @@ public class ReplaceTable {
 		}
 	}
 	
-	public void setIndex(String deweyID, String type, String xml, int[] exLabel) {
+	public void setIndex(String deweyID, String type, String xml, int[] bitVec) {
 		try {
-			ReplaceTableNode node = new ReplaceTableNode(type, xml, exLabel);
+			ReplaceTableNode node = new ReplaceTableNode(type, xml, bitVec);
 			DatabaseEntry theKey = new DatabaseEntry(deweyID.getBytes("UTF-8"));
 			DatabaseEntry theData = new DatabaseEntry();
 			//向DatabaseEntry里写数据
